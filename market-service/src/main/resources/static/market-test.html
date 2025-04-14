@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MetaGen Market WebSocket Test</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    input, button { font-size: 1em; padding: 5px; }
+    #log {
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      height: 400px;
+      overflow-y: scroll;
+      padding: 10px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h2>📡 MetaGen Market WebSocket Test</h2>
+
+  <label>🔐 JWT Token:</label><br />
+  <input type="text" id="jwt" placeholder="Paste your JWT token here" size="100" /><br /><br />
+
+  <label>💹 Symbols (comma-separated like EUR/USD,BTC/USD):</label><br />
+  <input type="text" id="symbols" placeholder="EUR/USD,BTC/USD" size="50" /><br /><br />
+
+  <label>⏱️ Timeframe:</label><br />
+  <input type="text" id="timeframe" placeholder="1m" value="1m" /><br /><br />
+
+  <button onclick="connect()">🔌 Connect & Subscribe</button>
+  <button onclick="disconnect()">❌ Disconnect</button>
+
+  <h3>📥 WebSocket Log:</h3>
+  <div id="log"></div>
+
+  <script>
+    let socket = null;
+
+    function log(message) {
+      const logArea = document.getElementById("log");
+      logArea.textContent += message + "\n";
+      logArea.scrollTop = logArea.scrollHeight;
+    }
+
+    function connect() {
+      const token = document.getElementById("jwt").value.trim();
+      const symbolInput = document.getElementById("symbols").value.trim();
+      const timeframe = document.getElementById("timeframe").value.trim();
+
+      const symbols = symbolInput.split(",").map(s => s.trim());
+
+      const url = "ws://localhost:8082/api/market/stream?token=" + token;
+      socket = new WebSocket(url);
+
+      socket.onopen = () => {
+        log("✅ Connected to WebSocket");
+        const subscribeMsg = {
+          type: "subscribe",
+          symbols: symbols,
+          timeframe: timeframe
+        };
+        socket.send(JSON.stringify(subscribeMsg));
+        log("📨 Sent subscription:\n" + JSON.stringify(subscribeMsg, null, 2));
+      };
+
+      socket.onmessage = (event) => {
+        log("📥 " + event.data);
+      };
+
+      socket.onerror = (event) => {
+        log("❌ WebSocket Error: " + JSON.stringify(event));
+      };
+
+      socket.onclose = () => {
+        log("❌ WebSocket disconnected");
+      };
+    }
+
+    function disconnect() {
+      if (socket) {
+        socket.close();
+        log("⛔ Disconnected manually");
+      }
+    }
+  </script>
+</body>
+</html>

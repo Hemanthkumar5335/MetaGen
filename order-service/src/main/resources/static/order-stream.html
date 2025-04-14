@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>📦 MetaGen Order Execution Stream</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    input, button { font-size: 1em; padding: 6px; }
+    #log {
+      background: #f4f4f4;
+      border: 1px solid #ccc;
+      height: 300px;
+      overflow-y: scroll;
+      padding: 10px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h2>📦 MetaGen Order Execution WebSocket</h2>
+
+  <label>🔐 JWT Token:</label><br>
+  <input type="text" id="jwt" size="100" placeholder="Paste your JWT token here"><br><br>
+
+  <button onclick="connect()">🔌 Connect</button>
+  <button onclick="disconnect()">❌ Disconnect</button>
+
+  <h3>📥 Execution Stream:</h3>
+  <div id="log"></div>
+
+  <script>
+    let socket = null;
+
+    function log(message) {
+      const logArea = document.getElementById('log');
+      logArea.textContent += message + '\n';
+      logArea.scrollTop = logArea.scrollHeight;
+    }
+
+    function connect() {
+      const token = document.getElementById('jwt').value.trim();
+      if (!token) {
+        alert("⚠️ Please enter your JWT token");
+        return;
+      }
+
+      const wsUrl = "ws://localhost:8084/api/orders/stream?token=" + token;
+      socket = new WebSocket(wsUrl);
+
+      socket.onopen = () => {
+        log("✅ Connected to Order WebSocket");
+      };
+
+      socket.onmessage = (event) => {
+        log("📥 " + event.data);
+      };
+
+      socket.onerror = (error) => {
+        log("❌ WebSocket Error: " + JSON.stringify(error));
+      };
+
+      socket.onclose = () => {
+        log("❌ Disconnected from WebSocket");
+      };
+    }
+
+    function disconnect() {
+      if (socket) {
+        socket.close();
+        log("⛔ Disconnected manually");
+      }
+    }
+  </script>
+</body>
+</html>
