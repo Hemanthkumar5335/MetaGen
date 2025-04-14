@@ -24,7 +24,6 @@ MetaGen Terminal is a modular trading platform built with Spring Boot. It suppor
 - Expert Advisor (EA) JSON signal integration
 - Risk check integration before trade execution
 - Centralized trade logging and history
-- Postman Collection and HTML Dashboard included
 
 ---
 
